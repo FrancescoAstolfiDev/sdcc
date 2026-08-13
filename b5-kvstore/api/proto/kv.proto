@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package kv;
+
+option go_package = "b5-kvstore/pkg/pb";
+
+// KVService is called by the Client Proxy against the current Leader only
+// (writes) or Leader/follower (reads, subject to Read-Index). See spec §9.2.
+service KVService {
+  rpc Get(GetRequest) returns (GetReply);
+  rpc Put(PutRequest) returns (WriteReply);
+  rpc Update(PutRequest) returns (WriteReply); // same shape as Put, semantically an overwrite
+  rpc Delete(DeleteRequest) returns (WriteReply);
+}
+
+message GetRequest {
+  string key = 1;
+}
+
+message GetReply {
+  bool found = 1;
+  string value = 2;
+  string redirect_leader = 3;
+  // ok = false means this node could not authoritatively answer the read
+  // (e.g. the Read-Index handshake failed or timed out, md-week4 §4) —
+  // found/value are meaningless in that case, and the caller must retry via
+  // redirect_leader if set, or its own cached leader address otherwise.
+  // Always true for a Leader's direct read and for a follower's
+  // Read-Index-confirmed read.
+  bool ok = 4;
+}
+
+message PutRequest {
+  string key = 1;
+  string value = 2;
+}
+
+message DeleteRequest {
+  string key = 1;
+}
+
+message WriteReply {
+  bool success = 1;
+  string redirect_leader = 2; // set when this node is not the leader
+  uint64 commit_index = 3;    // for testing/observability
+}
+
+// Internal representation appended to the Raft log (§9.2).
+message KVCommand {
+  enum Op {
+    PUT = 0;
+    DELETE = 1;
+    UPDATE = 2;
+  }
+  Op op = 1;
+  string key = 2;
+  string value = 3; // empty for DELETE
+}

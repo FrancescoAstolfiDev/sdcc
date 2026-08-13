@@ -1,0 +1,8 @@
+FROM golang:1.22-alpine AS builder
+WORKDIR /src
+COPY . .
+RUN go mod tidy && CGO_ENABLED=0 go build -o /out/discovery ./cmd/discovery
+
+FROM alpine:3.20
+COPY --from=builder /out/discovery /usr/local/bin/discovery
+ENTRYPOINT ["/usr/local/bin/discovery"]

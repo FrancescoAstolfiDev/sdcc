@@ -1,0 +1,86 @@
+services:
+  
+  discovery:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.discovery
+    env_file: .env
+    environment:
+      DISCOVERY_PORT: "8500"
+    networks: [b5-net]
+
+  consensus-node-1:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.consensus
+    env_file: .env
+    environment:
+      NODE_ID: node-1
+      CONSENSUS_PORT: "9001"
+    volumes:
+      - consensus-node-1-data:/data
+    networks: [b5-net]
+    depends_on: [discovery, snapshot-backup]
+    command: ["sh", "-c", "sleep 3 && exec /usr/local/bin/consensus-node"]
+
+  consensus-node-2:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.consensus
+    env_file: .env
+    environment:
+      NODE_ID: node-2
+      CONSENSUS_PORT: "9002"
+    volumes:
+      - consensus-node-2-data:/data
+    networks: [b5-net]
+    depends_on: [discovery, snapshot-backup]
+    command: ["sh", "-c", "sleep 3 && exec /usr/local/bin/consensus-node"]
+
+  consensus-node-3:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.consensus
+    env_file: .env
+    environment:
+      NODE_ID: node-3
+      CONSENSUS_PORT: "9003"
+    volumes:
+      - consensus-node-3-data:/data
+    networks: [b5-net]
+    depends_on: [discovery, snapshot-backup]
+    command: ["sh", "-c", "sleep 3 && exec /usr/local/bin/consensus-node"]
+
+  snapshot-backup:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.snapshot
+    env_file: .env
+    environment:
+      SNAPSHOT_PORT: "8600"
+    volumes:
+      - snapshot-backup-data:/data
+    networks: [b5-net]
+    depends_on: [discovery]
+
+  client-proxy:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.proxy
+    env_file: .env
+    environment:
+      HTTP_PORT: "8080"
+    ports:
+      - "8080:8080"
+    networks: [b5-net]
+    depends_on: [discovery]
+
+networks:
+  b5-net:
+    driver: bridge
+
+volumes:
+  consensus-node-1-data:
+  consensus-node-2-data:
+  consensus-node-3-data:
+  snapshot-backup-data:

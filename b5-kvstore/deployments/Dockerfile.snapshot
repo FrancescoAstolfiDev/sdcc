@@ -1,0 +1,8 @@
+FROM golang:1.22-alpine AS builder
+WORKDIR /src
+COPY . .
+RUN go mod tidy && CGO_ENABLED=0 go build -o /out/snapshot-backup ./cmd/snapshot-backup
+
+FROM alpine:3.20
+COPY --from=builder /out/snapshot-backup /usr/local/bin/snapshot-backup
+ENTRYPOINT ["/usr/local/bin/snapshot-backup"]

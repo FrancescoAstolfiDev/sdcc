@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package consensus;
+
+option go_package = "b5-kvstore/pkg/pb";
+
+// Consensus is the internal Raft-lite RPC surface exchanged between
+// consensus nodes only (leader <-> followers/candidates). See spec §9.1.
+service Consensus {
+  rpc RequestVote(RequestVoteRequest) returns (RequestVoteReply);// get the election from the other candidates
+  rpc AppendEntries(AppendEntriesRequest) returns (AppendEntriesReply); // get the entry to add in the log from the leader or as heartbeat from the leader
+  rpc GetStatus(GetStatusRequest) returns (GetStatusReply); // implemented for the service discovery
+
+  // Sent by the Leader to a follower that has fallen behind a compaction
+  // point (§3.6). Not part of the authoritative §9.1 listing but required
+  // by §3.6's RPC signature.
+  rpc InstallSnapshot(InstallSnapshotRequest) returns (InstallSnapshotReply);
+
+  // Read-Index handshake (md-week4 §0/§4): a follower asks the current
+  // leader to confirm a safe read index (after a fresh quorum-acked
+  // heartbeat round) before serving a linearizable follower read.
+  rpc RequestReadIndex(ReadIndexRequest) returns (ReadIndexReply);
+}
+
+enum Role {
+  FOLLOWER = 0;
+  CANDIDATE = 1;
+  LEADER = 2;
+}
+
+message RequestVoteRequest {
+  uint64 term = 1;
+  string candidate_id = 2;
+  uint64 last_log_index = 3;
+  uint64 last_log_term = 4;
+}
+
+message RequestVoteReply {
+  uint64 term = 1;
+  bool vote_granted = 2;
+}
+
+message LogEntry {
+  uint64 term = 1;
+  uint64 index = 2;
+  bytes command = 3; // serialized KVCommand, see kv.proto
+}
+
+message AppendEntriesRequest {
+  uint64 term = 1;
+  string leader_id = 2;
+  uint64 prev_log_index = 3;
+  uint64 prev_log_term = 4;
+  repeated LogEntry entries = 5; // empty => heartbeat
+  uint64 leader_commit = 6;
+}
+
+message AppendEntriesReply {
+  uint64 term = 1;
+  bool success = 2;
+  // Fast log back-off (§10.5).
+  uint64 conflict_index = 3;
+  uint64 conflict_term = 4;
+}
+
+message GetStatusRequest {}
+
+message GetStatusReply {
+  Role role = 1;
+  uint64 term = 2;
+  string address = 3;
+  string node_id = 4;
+}
+
+message InstallSnapshotRequest {
+  uint64 term = 1;
+  string leader_id = 2;
+  uint64 last_included_index = 3;
+  uint64 last_included_term = 4;
+  bytes data = 5;
+}
+
+message InstallSnapshotReply {
+  uint64 term = 1;
+}
+
+message ReadIndexRequest {
+  string follower_id = 1;
+}
+
+message ReadIndexReply {
+  bool ok = 1;              // false if this node is not (or no longer) leader
+  uint64 read_index = 2;    // the leader's confirmed commit index, valid only if ok = true
+  string redirect_leader = 3; // set when ok = false and the leader address is known
+}
