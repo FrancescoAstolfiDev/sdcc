@@ -1,0 +1,33 @@
+# Go build artifacts
+*.exe
+*.test
+*.out
+bin/
+
+# Test cache / coverage
+*.txt
+!README.txt
+coverage.out
+coverage.html
+
+# Snapshot/debug data generati a runtime — mai da versionare
+*.dat
+snapshot-dump.dat
+body.json
+
+# Dati persistenti dei container (se mai montati fuori da Docker volumes)
+/data/
+
+# IDE
+.vscode/
+.idea/
+
+# Variabili d'ambiente con eventuali segreti (se .env contiene credenziali EC2 in Settimana 6)
+.env
+!.env.example
+!deployments/.env.example
+
+#aws credentials
+*.pem
+*.key
+aws-credentials*

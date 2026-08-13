@@ -1,0 +1,22 @@
+name: tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  unit-and-inprocess:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: b5-kvstore
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Vet
+        run: go vet ./...
+      - name: Unit + in-process tests (race detector)
+        run: go test -race ./... -v
