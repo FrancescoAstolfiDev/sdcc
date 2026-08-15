@@ -10,24 +10,26 @@ bin/
 coverage.out
 coverage.html
 
-# Snapshot/debug data generati a runtime — mai da versionare
+# Snapshot/debug data generated at runtime — never versioned
 *.dat
 snapshot-dump.dat
 body.json
 
-# Dati persistenti dei container (se mai montati fuori da Docker volumes)
+# Container persistent data (if ever mounted outside Docker volumes)
 /data/
 
 # IDE
 .vscode/
 .idea/
 
-# Variabili d'ambiente con eventuali segreti (se .env contiene credenziali EC2 in Settimana 6)
-.env
-!.env.example
-!deployments/.env.example
+# Environment files (b5-kvstore/deployments/.env, .env.3nodes, .5nodes, .7nodes, etc.)
+# — may contain EC2/AWS credentials, never versioned; only the .example templates are tracked
+b5-kvstore/deployments/.env
+b5-kvstore/deployments/.env.*
+!b5-kvstore/deployments/.env.example
+!b5-kvstore/deployments/.env.*.example
 
-#aws credentials
+# AWS credentials
 *.pem
 *.key
 aws-credentials*

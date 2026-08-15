@@ -1,6 +1,8 @@
 PROTO_DIR := api/proto
 PB_DIR := pkg/pb
-COMPOSE := docker compose -f deployments/docker-compose.yml --env-file deployments/.env
+# make up/down/logs always target the default 3-node scenario (consensus-node-1..3,
+# no profile). For 5/7-node scenarios, run docker compose directly per README.md.
+COMPOSE := docker compose -f deployments/docker-compose.yml --env-file deployments/.env.3nodes
 
 .PHONY: proto tidy build test-raft test-proxy test-snapshot test up down logs clean
 

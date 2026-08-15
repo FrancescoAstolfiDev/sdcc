@@ -1,20 +1,31 @@
+x-consensus-common-env: &consensus-common-env
+  DISCOVERY_ADDR: ${DISCOVERY_ADDR}
+  SNAPSHOT_ADDR: ${SNAPSHOT_ADDR}
+  PEERS: ${PEERS}
+  SNAPSHOT_POLL_INTERVAL_MS: ${SNAPSHOT_POLL_INTERVAL_MS}
+  LOG_CAPACITY_ENTRIES: ${LOG_CAPACITY_ENTRIES}
+  ELECTION_TIMEOUT_MIN_MS: ${ELECTION_TIMEOUT_MIN_MS}
+  ELECTION_TIMEOUT_MAX_MS: ${ELECTION_TIMEOUT_MAX_MS}
+  HEARTBEAT_INTERVAL_MS: ${HEARTBEAT_INTERVAL_MS}
+
 services:
-  
+
   discovery:
     build:
       context: ..
       dockerfile: deployments/Dockerfile.discovery
-    env_file: .env
     environment:
       DISCOVERY_PORT: "8500"
+      PEERS: ${PEERS}
+      DISCOVERY_POLL_INTERVAL_MS: ${DISCOVERY_POLL_INTERVAL_MS}
     networks: [b5-net]
 
   consensus-node-1:
     build:
       context: ..
       dockerfile: deployments/Dockerfile.consensus
-    env_file: .env
     environment:
+      <<: *consensus-common-env
       NODE_ID: node-1
       CONSENSUS_PORT: "9001"
     volumes:
@@ -27,8 +38,8 @@ services:
     build:
       context: ..
       dockerfile: deployments/Dockerfile.consensus
-    env_file: .env
     environment:
+      <<: *consensus-common-env
       NODE_ID: node-2
       CONSENSUS_PORT: "9002"
     volumes:
@@ -41,8 +52,8 @@ services:
     build:
       context: ..
       dockerfile: deployments/Dockerfile.consensus
-    env_file: .env
     environment:
+      <<: *consensus-common-env
       NODE_ID: node-3
       CONSENSUS_PORT: "9003"
     volumes:
@@ -51,13 +62,77 @@ services:
     depends_on: [discovery, snapshot-backup]
     command: ["sh", "-c", "sleep 3 && exec /usr/local/bin/consensus-node"]
 
+  consensus-node-4:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.consensus
+    environment:
+      <<: *consensus-common-env
+      NODE_ID: node-4
+      CONSENSUS_PORT: "9004"
+    volumes:
+      - consensus-node-4-data:/data
+    networks: [b5-net]
+    depends_on: [discovery, snapshot-backup]
+    command: ["sh", "-c", "sleep 3 && exec /usr/local/bin/consensus-node"]
+    profiles: ["5nodes", "7nodes"]
+
+  consensus-node-5:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.consensus
+    environment:
+      <<: *consensus-common-env
+      NODE_ID: node-5
+      CONSENSUS_PORT: "9005"
+    volumes:
+      - consensus-node-5-data:/data
+    networks: [b5-net]
+    depends_on: [discovery, snapshot-backup]
+    command: ["sh", "-c", "sleep 3 && exec /usr/local/bin/consensus-node"]
+    profiles: ["5nodes", "7nodes"]
+
+  consensus-node-6:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.consensus
+    environment:
+      <<: *consensus-common-env
+      NODE_ID: node-6
+      CONSENSUS_PORT: "9006"
+    volumes:
+      - consensus-node-6-data:/data
+    networks: [b5-net]
+    depends_on: [discovery, snapshot-backup]
+    command: ["sh", "-c", "sleep 3 && exec /usr/local/bin/consensus-node"]
+    profiles: ["7nodes"]
+
+  consensus-node-7:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.consensus
+    environment:
+      <<: *consensus-common-env
+      NODE_ID: node-7
+      CONSENSUS_PORT: "9007"
+    volumes:
+      - consensus-node-7-data:/data
+    networks: [b5-net]
+    depends_on: [discovery, snapshot-backup]
+    command: ["sh", "-c", "sleep 3 && exec /usr/local/bin/consensus-node"]
+    profiles: ["7nodes"]
+
   snapshot-backup:
     build:
       context: ..
       dockerfile: deployments/Dockerfile.snapshot
-    env_file: .env
     environment:
       SNAPSHOT_PORT: "8600"
+      DISCOVERY_ADDR: ${DISCOVERY_ADDR}
+      SNAPSHOT_BACKUP_POLL_INTERVAL_MS: ${SNAPSHOT_BACKUP_POLL_INTERVAL_MS}
+      COMPACTION_THRESHOLD_PERCENT: ${COMPACTION_THRESHOLD_PERCENT}
+      COMPACTION_CONCURRENCY_GUARD_PERCENT: ${COMPACTION_CONCURRENCY_GUARD_PERCENT}
+      SNAPSHOT_BACKUP_RPC_TIMEOUT_MS: ${SNAPSHOT_BACKUP_RPC_TIMEOUT_MS}
     volumes:
       - snapshot-backup-data:/data
     networks: [b5-net]
@@ -67,9 +142,11 @@ services:
     build:
       context: ..
       dockerfile: deployments/Dockerfile.proxy
-    env_file: .env
     environment:
       HTTP_PORT: "8080"
+      DISCOVERY_ADDR: ${DISCOVERY_ADDR}
+      PROXY_REFRESH_INTERVAL_MS: ${PROXY_REFRESH_INTERVAL_MS}
+      PROXY_RPC_TIMEOUT_MS: ${PROXY_RPC_TIMEOUT_MS}
     ports:
       - "8080:8080"
     networks: [b5-net]
@@ -83,4 +160,8 @@ volumes:
   consensus-node-1-data:
   consensus-node-2-data:
   consensus-node-3-data:
+  consensus-node-4-data:
+  consensus-node-5-data:
+  consensus-node-6-data:
+  consensus-node-7-data:
   snapshot-backup-data:

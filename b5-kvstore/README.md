@@ -171,3 +171,63 @@ services are reachable only on the internal `b5-net` Docker network, per
 | `COMPACTION_THRESHOLD_PERCENT` | 30 | `snapshot-backup` |
 | `COMPACTION_CONCURRENCY_GUARD_PERCENT` | 90 | `snapshot-backup` |
 | `SNAPSHOT_BACKUP_RPC_TIMEOUT_MS` | 2000 | `snapshot-backup` |
+
+## Deployment scenarios: 3 / 5 / 7 consensus nodes
+
+`deployments/docker-compose.yml` defines all seven `consensus-node-1..7`
+services up front (Week 6 scalability testing needs 3, 5, and 7-node
+clusters — see `quorumSize` in `internal/raft/node.go`). Which ones actually
+start is controlled by [Compose
+profiles](https://docs.docker.com/compose/how-tos/profiles/), not by editing
+the compose file:
+
+- `consensus-node-1..3` have no `profiles:` key, so they always start.
+- `consensus-node-4/5` are tagged `profiles: ["5nodes", "7nodes"]`.
+- `consensus-node-6/7` are tagged `profiles: ["7nodes"]`.
+
+The cluster-wide `PEERS` list (and every other shared env var) is supplied
+via `--env-file`, not via a fixed `.env` — each scenario has its own file:
+`deployments/.env.3nodes`, `.env.5nodes`, `.env.7nodes`. Only the `PEERS`
+value differs between them; ports/timeouts/etc. are identical.
+
+### First-time setup
+
+The `.env.<scenario>` files are gitignored (they're the per-scenario
+runtime config, kept out of version control per deployment). Before the
+first deploy of a given scenario, copy its tracked `.example` template:
+
+```sh
+cd deployments
+cp .env.3nodes.example .env.3nodes   # only the scenario(s) you plan to run
+cp .env.5nodes.example .env.5nodes
+cp .env.7nodes.example .env.7nodes
+```
+
+### Launching a scenario
+
+```sh
+# 3 nodes (default — no profile flag needed)
+docker compose --env-file .env.3nodes up -d --build
+
+# 5 nodes
+docker compose --env-file .env.5nodes --profile 5nodes up -d --build
+
+# 7 nodes
+docker compose --env-file .env.7nodes --profile 7nodes up -d --build
+```
+
+Run these from `deployments/` (or add `-f deployments/docker-compose.yml`
+from the repo root). Tear down with the matching `--env-file`/`--profile`
+pair, e.g. `docker compose --env-file .env.5nodes --profile 5nodes down -v`.
+
+`make up`/`make down`/`make logs` always target the default 3-node scenario
+(`deployments/.env.3nodes`); use the `docker compose` commands above
+directly for the 5/7-node scenarios.
+
+To confirm which services a given scenario actually starts (e.g. that
+`--profile 5nodes` brings up exactly `consensus-node-1..5` and not
+`-6`/`-7`), inspect the resolved config instead of starting containers:
+
+```sh
+docker compose --env-file .env.5nodes --profile 5nodes config --services
+```
