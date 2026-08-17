@@ -10,13 +10,6 @@ bin/
 coverage.out
 coverage.html
 
-# Snapshot/debug data generated at runtime — never versioned
-*.dat
-snapshot-dump.dat
-body.json
-
-# Container persistent data (if ever mounted outside Docker volumes)
-/data/
 
 # IDE
 .vscode/
@@ -33,3 +26,8 @@ b5-kvstore/deployments/.env.*
 *.pem
 *.key
 aws-credentials*
+
+# Downloaded toolchains/tools — never versioned, fetch locally instead
+go*.linux-amd64.tar.gz
+grpcurl.zip
+b5-kvstore/deployments/grpcurl/

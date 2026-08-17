@@ -1,6 +1,6 @@
 # Spiegazione dettagliata — Week 1: Skeleton & RPC Contracts
 
-Questo documento spiega, file per file, cosa fa ogni parte del codice generato per la Settimana 1 del progetto B5, e perché è stata scritta in quel modo, con riferimento alle sezioni della specifica tecnica (`Progetto_B5_Full_Technical_Spec_EN.pdf`).
+Questo documento spiega, file per file, cosa fa ogni parte del codice generato per la Settimana 1 del progetto B5, e perché è stata scritta in quel modo, con riferimento alle sezioni della specifica tecnica (`../documentation/Progetto_B5_Full_Technical_Spec_EN.pdf`).
 
 Obiettivo della Settimana 1 (da `md-week1.md`): struttura del modulo Go, contratti Protocol Buffer, stub eseguibili per i 4 microservizi, librerie core integrate, `docker-compose.yml` valido per verificare la connettività di rete Docker. **Non** è previsto in questa fase implementare la logica reale di Raft, routing, snapshot, ecc. — quella arriva nelle settimane successive (§10.7 della spec: prima strutture dati/log in isolamento, poi elezioni/replica su trasporto finto, poi gRPC reale, poi persistenza, poi snapshot).
 
