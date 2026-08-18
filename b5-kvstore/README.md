@@ -54,16 +54,8 @@ HTTP_PORT=18080 DISCOVERY_ADDR=127.0.0.1:18500 /tmp/client-proxy
 services are reachable only on the internal `b5-net` Docker network, per
 §11.2.
 
-### Config (env vars, Week 4 additions)
 
-| Var | Default | Used by |
-|---|---|---|
-| `DISCOVERY_POLL_INTERVAL_MS` | 2000 | `discovery` |
-| `PROXY_REFRESH_INTERVAL_MS` | 2000 | `client-proxy` |
-| `PROXY_RPC_TIMEOUT_MS` | 2000 | `client-proxy` |
-| `DISCOVERY_ADDR` | — (required) | `client-proxy`, `snapshot-backup` |
-
-### Config (env vars, Week 5 additions)
+### Config (env vars)
 
 | Var | Default | Used by |
 |---|---|---|
@@ -134,3 +126,63 @@ To confirm which services a given scenario actually starts (e.g. that
 ```sh
 docker compose --env-file .env.5nodes --profile 5nodes config --services
 ```
+
+### Scalability testing (`loadgen`)
+
+Once a scenario is up (`client-proxy` published on `:8080` regardless of
+node count — §11.2), drive it with `cmd/loadgen` to measure throughput/
+latency at that cluster size:
+
+```sh
+# 1. bring the scenario up (from deployments/)
+cd deployments
+docker compose --env-file .env.7nodes --profile 7nodes up -d --build
+
+# 2. run the load generator (from the repo root, b5-kvstore/)
+cd ..
+go run ./cmd/loadgen -target http://localhost:8080 -requests 1000 -concurrency 20 -read-pct 70
+```
+
+`-target` is the client-proxy base URL, `-requests` the total request
+count, `-concurrency` the number of parallel workers, `-read-pct` the
+percentage of requests that are reads (GET) vs writes (POST), 0-100
+(defaults: `http://localhost:8080`, 1000, 10, 80 — see
+`cmd/loadgen/main.go`). Repeat against the `.env.3nodes`/`.env.5nodes`/
+`.env.7nodes` scenarios to compare scalability across cluster sizes (Week 6).
+
+### Fault-tolerance testing (`run_fault_test.sh`)
+
+`experiments/fault-tolerance/run_fault_test.sh` kills the current Raft
+leader against an already-running cluster and measures detection,
+election, and recovery time (spec §12.2), appending a row to
+`experiments/fault-tolerance/results.csv`.
+
+```sh
+# 1. bring the scenario up (from deployments/)
+cd deployments
+docker compose --env-file .env.7nodes --profile 7nodes up -d --build
+
+# 2. run the fault test (from experiments/fault-tolerance/)
+cd ../experiments/fault-tolerance
+TERM_THRESHOLD=50 bash run_fault_test.sh .env.7nodes 7nodes 10
+```
+
+The three arguments are `[env_file] [profile] [expected_up_services]` and
+must match how the stack was actually started — `expected_up_services` is
+6 for `.env.3nodes`, 8 for `.env.5nodes`, 10 for `.env.7nodes` (see the
+script header for why this is checked explicitly rather than assumed).
+`TERM_THRESHOLD` (env override, default 10) is the Raft term above which
+the cluster is considered stale/leftover from a previous run; raise it if
+you're re-running fault tests repeatedly against the same long-lived
+cluster and hitting false "stale term" aborts.
+
+On Windows, run it through Git Bash rather than PowerShell directly, e.g.
+from a PowerShell prompt:
+
+```powershell
+& "C:\Program Files\Git\bin\bash.exe" -c "cd /c/dev/sdcc/b5-kvstore/experiments/fault-tolerance && TERM_THRESHOLD=50 bash run_fault_test.sh .env.7nodes 7nodes 10"
+```
+
+(adjust the `/c/dev/sdcc/...` path to wherever the repo is checked out;
+the script itself requires only `docker compose`, `curl`, `awk`, `sed`,
+and GNU `date`, and avoids PCRE `grep -P` for Git Bash compatibility.)
