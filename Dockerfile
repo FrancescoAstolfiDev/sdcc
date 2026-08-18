@@ -19,6 +19,10 @@ RUN wget -q https://go.dev/dl/go1.23.6.linux-amd64.tar.gz \
     && tar -C /usr/local -xzf go1.23.6.linux-amd64.tar.gz \
     && rm go1.23.6.linux-amd64.tar.gz
 
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 ENV PATH="${PATH}:/usr/local/go/bin:/home/node/go/bin"
 
 RUN npm install -g @anthropic-ai/claude-code
