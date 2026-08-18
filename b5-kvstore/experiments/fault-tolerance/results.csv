@@ -3,3 +3,4 @@ run_number,node_killed,detection_ms,election_ms,recovery_ms
 2,consensus-node-4,169,4,1681
 3,consensus-node-1,234,4,1550
 4,consensus-node-5,245,3,2321
+5,consensus-node-3,232,199,3153
