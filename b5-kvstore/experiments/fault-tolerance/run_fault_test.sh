@@ -102,8 +102,23 @@ extract_timestamped_events() {
 		sort -t $'\t' -k1,1
 }
 
+# GNU date's %3N width-limiter (nanoseconds truncated to 3 digits = millis)
+# isn't honored by every date implementation (e.g. uutils coreutils just
+# prints the full 9-digit %N) — so %s%3N silently becomes seconds*1e9+nanos
+# instead of seconds*1e3+millis, making every ms-based deadline check below
+# effectively off by a factor of ~1e6. Deriving millis explicitly from %s%N
+# via arithmetic sidesteps the width-limiter entirely and works on both.
+ns_to_ms() {
+	local ns="$1"
+	printf '%d\n' "$((ns / 1000000))"
+}
+
 to_epoch_ms() {
-	date -u -d "$1" +%s%3N
+	ns_to_ms "$(date -u -d "$1" +%s%N)"
+}
+
+now_ms() {
+	ns_to_ms "$(date -u +%s%N)"
 }
 
 now_iso() {
@@ -177,7 +192,7 @@ url="$proxy_url/v1/kv/$key"
 deadline_ms=$((kill_ms + recovery_timeout_s * 1000))
 success_ts=""
 while true; do
-	now_ms=$(date -u +%s%3N)
+	now_ms=$(now_ms)
 	if [ "$now_ms" -ge "$deadline_ms" ]; then
 		die "timeout: no successful write (HTTP 201 on $url) within ${recovery_timeout_s}s of the kill — the cluster did not recover."
 	fi

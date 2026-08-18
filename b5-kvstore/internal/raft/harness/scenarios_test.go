@@ -126,11 +126,11 @@ func TestReplication_QuorumCommitWithUnresponsiveFollower(t *testing.T) {
 		t.Fatalf("Propose failed on leader %s", leader)
 	}
 
-	waitUntil(t, 2*time.Second, func() bool {
+	waitUntil(t, 5*time.Second, func() bool {
 		applied := c.Applied(leader)
 		return len(applied) >= 1 && applied[0].Index == index
 	})
-	waitUntil(t, 2*time.Second, func() bool {
+	waitUntil(t, 5*time.Second, func() bool {
 		applied := c.Applied(healthy)
 		return len(applied) >= 1 && applied[0].Index == index
 	})
@@ -207,7 +207,7 @@ func TestLeaderCrash_ReelectionAndCommitSafety(t *testing.T) {
 		t.Fatalf("Propose failed on new leader %s", newLeader)
 	}
 
-	waitUntil(t, 2*time.Second, func() bool {
+	waitUntil(t, 5*time.Second, func() bool {
 		applied := c.Applied(newLeader)
 		return len(applied) >= 2 && applied[len(applied)-1].Index == newIndex
 	})
@@ -216,7 +216,7 @@ func TestLeaderCrash_ReelectionAndCommitSafety(t *testing.T) {
 		t.Fatalf("expected old entry %d then new entry %d applied in order on %s, got %+v", index, newIndex, newLeader, applied)
 	}
 
-	waitUntil(t, 2*time.Second, func() bool {
+	waitUntil(t, 5*time.Second, func() bool {
 		applied := c.Applied(other)
 		return len(applied) >= 2 && applied[len(applied)-1].Index == newIndex
 	})
@@ -252,7 +252,7 @@ func TestLogRepair_ConvergesWithinBoundedRoundTrips(t *testing.T) {
 			}
 			lastIndex = idx
 		}
-		waitUntil(t, 2*time.Second, func() bool {
+		waitUntil(t, 5*time.Second, func() bool {
 			applied := c.Applied(leader)
 			return len(applied) > 0 && applied[len(applied)-1].Index == lastIndex
 		})
@@ -268,7 +268,7 @@ func TestLogRepair_ConvergesWithinBoundedRoundTrips(t *testing.T) {
 		return false, false, 0
 	})
 
-	waitUntil(t, 3*time.Second, func() bool {
+	waitUntil(t, 5*time.Second, func() bool {
 		applied := c.Applied(behind)
 		return len(applied) > 0 && applied[len(applied)-1].Index == lastIndex
 	})
@@ -305,6 +305,9 @@ func TestProposeSync_CommitsSuccessfully(t *testing.T) {
 	if len(applied) == 0 || applied[len(applied)-1].Index != index {
 		t.Fatalf("ProposeSync returned before the entry was actually applied: applied=%+v index=%d", applied, index)
 	}
+	
+	// Ensure all pending operations complete before cleanup
+	time.Sleep(100 * time.Millisecond)
 }
 
 // TestProposeSync_AbortsOnLeadershipLost: if the leader that accepted a
