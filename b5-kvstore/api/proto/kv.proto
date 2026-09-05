@@ -22,8 +22,8 @@ message GetReply {
   string value = 2;
   string redirect_leader = 3;
   // ok = false means this node could not authoritatively answer the read
-  // (e.g. the Read-Index handshake failed or timed out, md-week4 §4) —
-  // found/value are meaningless in that case, and the caller must retry via
+  // (e.g. the Read-Index handshake failed or timed out) — found/value are
+  // meaningless in that case, and the caller must retry via
   // redirect_leader if set, or its own cached leader address otherwise.
   // Always true for a Leader's direct read and for a follower's
   // Read-Index-confirmed read.

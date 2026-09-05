@@ -1,9 +1,9 @@
 // Command client-proxy is the stateless Client Proxy service (spec §4): the
 // only component reachable from the external Client, over REST/JSON, and
 // the only component that talks gRPC to the consensus cluster. It owns the
-// Circuit Breaker pattern (spec §8/md-week4 §5) and consults Service
-// Discovery (spec §7/md-week4 §1) for the current cluster map — see
-// internal/proxy for the routing/redirect/Read-Index logic itself.
+// Circuit Breaker pattern (spec §8) and consults Service Discovery
+// (spec §7) for the current cluster map — see internal/proxy for the
+// routing/redirect/Read-Index logic itself.
 package main
 
 import (

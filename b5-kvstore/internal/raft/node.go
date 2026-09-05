@@ -4,9 +4,10 @@
 // behind the Transport interface so the same core runs against both the
 // in-process fake transport (§6 Step B) and real gRPC (§6 Step C).
 //
-// Per §7 of the Week 2-3 instructions, snapshotting, the Client Proxy,
-// Circuit Breaker wiring, and Service Discovery integration are explicit
-// non-goals of this package for this phase.
+// Per spec §7, snapshotting, the Client Proxy, Circuit Breaker wiring, and
+// Service Discovery integration are explicit non-goals of this package —
+// they live in internal/snapshot, internal/proxy, internal/circuitbreaker,
+// and internal/discovery respectively.
 package raft
 
 import (
@@ -92,16 +93,16 @@ func envIntDefault(key string, def int) (int, error) {
 }
 
 // quorumSize returns floor(n/2)+1 for a cluster of n nodes. Kept as a
-// helper (not a hardcoded constant) since the scalability tests (Week 6)
-// run with 3, 5, and 7 nodes.
+// helper (not a hardcoded constant) since the scalability tests run with
+// 3, 5, and 7 nodes.
 func quorumSize(n int) int {
 	return n/2 + 1
 }
 
 // ApplyMsg is a single committed log entry handed to the caller-supplied
 // apply callback, in commit order. Building a real state machine is out of
-// scope for this phase (§7); this is the extension point Week 4-5 wiring
-// (and, in this phase, tests) hook into.
+// scope for this package (§7); this is the extension point internal/proxy
+// and internal/statemachine (and tests) hook into.
 type ApplyMsg struct {
 	Index   uint64
 	Term    uint64
@@ -114,9 +115,9 @@ type Config struct {
 	Address string
 	DataDir string
 	// Peers is the static list of other cluster members' addresses/ids.
-	// Per §7 this phase's non-goals, peer addressing is static config, not
-	// Service Discovery — this is the permanent design for the consensus
-	// layer, not a temporary shortcut.
+	// Per §7's non-goals for this package, peer addressing is static
+	// config, not Service Discovery — this is the permanent design for the
+	// consensus layer, not a temporary shortcut.
 	Peers     []string
 	Timing    TimingConfig
 	Transport Transport
@@ -131,13 +132,13 @@ type Config struct {
 	// defaultRPCTimeout.
 	RPCTimeout time.Duration
 
-	// Snapshot configures Week 5's compaction/catch-up integration
-	// (§5.1/§5.3). Zero value uses the documented defaults.
+	// Snapshot configures the compaction/catch-up integration (§5.1/§5.3).
+	// Zero value uses the documented defaults.
 	Snapshot SnapshotConfig
 	// SnapshotCatalog is this node's client to the Snapshot & Backup
 	// service's Snapshot Catalog API (§9.5), driving the periodic catch-up
 	// and local-compaction loop (§5.3). Nil disables the loop entirely —
-	// tests that don't exercise Week 5 (e.g. the Week 2-3 harness
+	// tests that don't exercise snapshotting (e.g. the plain harness
 	// scenarios) simply omit it.
 	SnapshotCatalog SnapshotCatalogClient
 	// LocalSnapshot is the latest locally-persisted snapshot file found in
@@ -149,8 +150,8 @@ type Config struct {
 	// machine with its State before constructing the Node, since Node
 	// itself only owns the log/indices, not the external state machine.
 	// Nil means "no local snapshot yet" (brand-new node or one that has
-	// never compacted/caught up), in which case NewNode behaves exactly as
-	// it did before Week 5: logOffset/commitIndex/lastApplied start at 0.
+	// never compacted/caught up), in which case NewNode starts
+	// logOffset/commitIndex/lastApplied at 0.
 	LocalSnapshot *snapshotfile.File
 	// StateMachine gives the catch-up loop (§5.3) restore access to the
 	// full state-machine map when a fetched snapshot is adopted. Structural
@@ -171,7 +172,7 @@ type Node struct {
 	// so the embedded fallbacks are never actually reached.
 	pb.UnimplementedConsensusServer
 	// Same forward-compatibility requirement for pb.SnapshotTransferServer
-	// (§9.4, Week 5): Node implements all three methods itself
+	// (§9.4): Node implements all three methods itself
 	// (snapshottransfer.go).
 	pb.UnimplementedSnapshotTransferServer
 
@@ -203,8 +204,8 @@ type Node struct {
 	currentTerm uint64
 	votedFor    string
 	// log is positional: log[i] has Index == logOffset + i + 1. Before any
-	// compaction, logOffset is 0 (log[i] has Index == i+1, as in Week 2-3).
-	// After compaction (Week 5, §5.1/§5.3), log[0] is a placeholder anchor
+	// compaction, logOffset is 0 (log[i] has Index == i+1). After
+	// compaction (§5.1/§5.3), log[0] is a placeholder anchor
 	// entry {Term: lastIncludedTerm, Index: logOffset+1} standing in for
 	// every entry at or before that index, which now exist only in the
 	// Snapshot & Backup service's catalog, not in this node's own log.
@@ -229,9 +230,9 @@ type Node struct {
 	// currentLeader holds the current leader's dialable address (not a bare
 	// node ID): the leaderId carried on AppendEntries is populated with the
 	// sender's own advertised address (see broadcastAppendEntries) so that
-	// followers can use it directly as a Transport target — for the Read-
-	// Index handshake (md-week4 §4) and for populating redirect_leader in
-	// KVService responses (md-week4 §2/§3).
+	// followers can use it directly as a Transport target — for the
+	// Read-Index handshake and for populating redirect_leader in
+	// KVService responses.
 	currentLeader string
 
 	lastHeartbeat   time.Time
@@ -247,8 +248,7 @@ type Node struct {
 
 	// applyWake is closed and replaced every time lastApplied advances
 	// (applyCommittedLocked), letting FollowerLinearizableRead's wait
-	// (md-week4 §4, follower step 3) block on a channel instead of
-	// busy-polling.
+	// block on a channel instead of busy-polling.
 	applyWake chan struct{}
 
 	stopCh   chan struct{}
@@ -268,7 +268,7 @@ type Node struct {
 // operation, per §2 ("in-memory only; on restart, both are recomputed from
 // the loaded log" — a restarted node cannot know what the cluster had
 // actually committed beyond what consensus re-establishes). If a local
-// snapshot is present (§3.6, Week 5), both instead seed from its
+// snapshot is present (§3.6), both instead seed from its
 // lastIncludedIndex: everything up to and including it is already reflected
 // in the state machine the caller restored, and log entries at or before
 // that index are dropped from the loaded log — replaying them again would

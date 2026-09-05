@@ -13,10 +13,10 @@ import (
 
 // Server implements pb.KVServiceServer (spec §9.2) on top of a raft.Node and
 // its local KV. It is the server-side counterpart the Client Proxy talks to
-// (internal/proxy is the client side, Week 4): writes go through
-// ProposeSync and only reply once committed; reads either serve directly
-// (this node is Leader — §3's default path) or perform the follower-side
-// Read-Index handshake first (md-week4 §4) before reading the local map.
+// (internal/proxy is the client side): writes go through ProposeSync and
+// only reply once committed; reads either serve directly (this node is
+// Leader — §3's default path) or perform the follower-side Read-Index
+// handshake first before reading the local map.
 type Server struct {
 	pb.UnimplementedKVServiceServer
 
@@ -27,7 +27,7 @@ type Server struct {
 	// caller gets an error back (translated by internal/proxy into a
 	// timeout/503, not exposed here). ReadIndexTimeout bounds the
 	// follower-side Read-Index handshake (RPC to leader + local catch-up
-	// wait) before falling back per md-week4 §4's runtime fallback rule.
+	// wait) before falling back per the handshake's runtime fallback rule.
 	ProposeTimeout   time.Duration
 	ReadIndexTimeout time.Duration
 }
@@ -48,8 +48,8 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetReply, err
 		rctx, cancel := context.WithTimeout(ctx, s.ReadIndexTimeout)
 		defer cancel()
 		if err := s.node.FollowerLinearizableRead(rctx); err != nil {
-			// md-week4 §4: both the ok=false case and the transport-failure
-			// case converge here — Ok=false tells the caller found/value
+			// Both the ok=false case and the transport-failure case
+			// converge here — Ok=false tells the caller found/value
 			// are meaningless (as opposed to a genuine "key not found");
 			// RedirectLeader carries the best-known leader address, if any,
 			// but the proxy's own cached leader is the authoritative

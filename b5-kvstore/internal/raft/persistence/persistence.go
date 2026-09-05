@@ -1,7 +1,7 @@
 // Package persistence implements the on-disk durability layer for a single
 // Raft-lite node: the current term / vote (state.json) and the replicated
 // log (log.dat). It has no networking dependencies so it can be unit tested
-// in complete isolation (spec Week 2-3, build order §10.7).
+// in complete isolation (build order §10.7).
 package persistence
 
 import (
@@ -185,7 +185,7 @@ func TruncateLogFrom(dir string, index uint64) error {
 // write-to-temp-then-rename-then-fsync so a crash mid-rewrite can't corrupt
 // the file. It is the shared crash-safe primitive behind TruncateLogFrom
 // (drops a conflicting suffix, §5's log-repair path) and is also reused
-// directly by log compaction (§5.1/§5.3, Week 5): compaction needs to drop a
+// directly by log compaction (§5.1/§5.3): compaction needs to drop a
 // *prefix* of the log (replacing it with a single anchor placeholder entry)
 // rather than a suffix, which TruncateLogFrom's index filter (`Index <
 // index`) cannot express — but the underlying safe-rewrite mechanics are

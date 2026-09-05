@@ -18,7 +18,7 @@ import (
 
 // fakeDiscovery is a controllable snapshot.DiscoveryClient: no real gRPC or
 // Service Discovery needed to exercise the compaction cycle's threshold/
-// concurrency-guard/leader-re-verification logic (md-week5.md §5).
+// concurrency-guard/leader-re-verification logic.
 type fakeDiscovery struct {
 	mu     sync.Mutex
 	leader string
@@ -140,8 +140,8 @@ func TestCompactor_AtThreshold_StartsCycle(t *testing.T) {
 // distinct check, independent of whether a cycle happens to already be
 // running from this instance's own point of view: occupancy this high is
 // itself treated as a signal that a cycle must be in flight somewhere
-// (md-week5.md §1 point 4), so no new one starts even though nothing here
-// is actually running yet.
+// (§1 point 4), so no new one starts even though nothing here is actually
+// running yet.
 func TestCompactor_AtConcurrencyGuard_Waits(t *testing.T) {
 	disc := &fakeDiscovery{leader: "leader-a"}
 	transfer := &fakeTransfer{status: &pb.LogStatusReply{OccupancyPercent: 90, FirstIndex: 1, LastIndex: 10}}
@@ -218,10 +218,10 @@ func TestCompactor_ConcurrencyGuard_SkipsSecondConcurrentCycle(t *testing.T) {
 }
 
 // TestCompactor_AbortsOnLeaderChangeMidCycle is the required integration
-// test (md-week5.md §5): leadership changes between the download and
-// ConfirmCompaction, and the cycle must abort without truncating anything,
-// with COMPACTION_ABORTED_LEADER_CHANGED actually firing — not just
-// implemented and left unverified (§4's checklist item).
+// test: leadership changes between the download and ConfirmCompaction, and
+// the cycle must abort without truncating anything, with
+// COMPACTION_ABORTED_LEADER_CHANGED actually firing — not just implemented
+// and left unverified (§4's checklist item).
 func TestCompactor_AbortsOnLeaderChangeMidCycle(t *testing.T) {
 	var logBuf bytes.Buffer
 	orig := log.Writer()

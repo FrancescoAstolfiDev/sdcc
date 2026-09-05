@@ -1,9 +1,9 @@
 // Command snapshot-backup is the asynchronous Snapshot & Backup service
 // (spec §5): polls the current leader's log occupancy and compacts it into
 // stable checkpoint files, and serves the Snapshot Catalog API (§9.5) so
-// every consensus node can independently catch up (§5.3). Week 5 wires the
+// every consensus node can independently catch up (§5.3), wiring the
 // polling/compaction cycle (internal/snapshot.Compactor) and the
-// SnapshotCatalog server on top of Week 1's health-check-only stub.
+// SnapshotCatalog server together.
 package main
 
 import (

@@ -19,8 +19,8 @@ gRPC/Protobuf internal RPC, REST/JSON client boundary). See
 make proto      # generate pkg/pb from api/proto/*.proto
 make build      # go mod tidy && go build ./...
 make test-raft     # fast in-process Raft-lite suite (persistence + harness), no containers
-make test-proxy    # fast Week 4 suite (proxy, discovery, circuitbreaker, statemachine), no containers
-make test-snapshot # fast Week 5 suite (snapshot compaction/threshold logic, snapshotfile round-trip), no containers
+make test-proxy    # fast proxy suite (proxy, discovery, circuitbreaker, statemachine), no containers
+make test-snapshot # fast snapshot suite (snapshot compaction/threshold logic, snapshotfile round-trip), no containers
 make test          # everything above
 make up         # docker compose up --build (verifies inter-container networking)
 make down
@@ -70,7 +70,7 @@ services are reachable only on the internal `b5-net` Docker network, per
 ## Deployment scenarios: 3 / 5 / 7 consensus nodes
 
 `deployments/docker-compose.yml` defines all seven `consensus-node-1..7`
-services up front (Week 6 scalability testing needs 3, 5, and 7-node
+services up front (scalability testing needs 3, 5, and 7-node
 clusters — see `quorumSize` in `internal/raft/node.go`). Which ones actually
 start is controlled by [Compose
 profiles](https://docs.docker.com/compose/how-tos/profiles/), not by editing
@@ -148,7 +148,7 @@ count, `-concurrency` the number of parallel workers, `-read-pct` the
 percentage of requests that are reads (GET) vs writes (POST), 0-100
 (defaults: `http://localhost:8080`, 1000, 10, 80 — see
 `cmd/loadgen/main.go`). Repeat against the `.env.3nodes`/`.env.5nodes`/
-`.env.7nodes` scenarios to compare scalability across cluster sizes (Week 6).
+`.env.7nodes` scenarios to compare scalability across cluster sizes.
 
 ### Fault-tolerance testing (`run_fault_test.sh`)
 

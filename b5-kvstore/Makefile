@@ -20,28 +20,27 @@ build: tidy
 	go build ./...
 
 # Fast in-process Raft-lite test suite (persistence unit tests + the
-# in-process fake-transport harness scenarios from md-week2 §6 Step B). No
-# networking, no containers — safe to run on every change.
+# in-process fake-transport harness scenarios). No networking, no
+# containers — safe to run on every change.
 test-raft:
 	go test ./internal/raft/...
 
-# Week 4 test suite (md-week4 §6): REST<->gRPC translation and
-# routing/redirect/Read-Index logic (internal/proxy, the latter run against
-# the in-process raft harness via internal/proxy's adapter — no real gRPC),
-# Service Discovery's polling/aggregation logic, the state machine's apply
-# logic, and the circuit breaker's trip/timeout/half-open-probe thresholds.
-# No networking, no containers — kept separate from test-raft so either
-# suite can be run on its own.
+# REST<->gRPC translation and routing/redirect/Read-Index logic
+# (internal/proxy, the latter run against the in-process raft harness via
+# internal/proxy's adapter — no real gRPC), Service Discovery's
+# polling/aggregation logic, the state machine's apply logic, and the
+# circuit breaker's trip/timeout/half-open-probe thresholds. No networking,
+# no containers — kept separate from test-raft so either suite can be run
+# on its own.
 test-proxy:
 	go test ./internal/proxy/... ./internal/discovery/... ./internal/circuitbreaker/... ./internal/statemachine/...
 
-# Week 5 test suite (md-week5 §5): the Snapshot & Backup service's
-# compaction threshold/concurrency-guard/leader-re-verification logic
-# (internal/snapshot, against fake Discovery/SnapshotTransfer clients — no
-# real gRPC) and the shared snapshot file format's encode/decode round-trip
-# (internal/snapshotfile). The catch-up/local-compaction side of §5.3 lives
-# in internal/raft and its harness, so it's already exercised by test-raft,
-# not duplicated here.
+# The Snapshot & Backup service's compaction threshold/concurrency-guard/
+# leader-re-verification logic (internal/snapshot, against fake
+# Discovery/SnapshotTransfer clients — no real gRPC) and the shared
+# snapshot file format's encode/decode round-trip (internal/snapshotfile).
+# The catch-up/local-compaction side of §5.3 lives in internal/raft and its
+# harness, so it's already exercised by test-raft, not duplicated here.
 test-snapshot:
 	go test ./internal/snapshot/... ./internal/snapshotfile/...
 

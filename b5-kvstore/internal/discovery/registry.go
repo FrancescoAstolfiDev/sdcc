@@ -10,8 +10,8 @@ import (
 	"b5-kvstore/pkg/pb"
 )
 
-// Registry holds the latest polled ClusterView (md-week4 §1) and knows how
-// to rebuild it from scratch every polling round. It has no persistence: if
+// Registry holds the latest polled ClusterView and knows how to rebuild it
+// from scratch every polling round. It has no persistence: if
 // Discovery restarts, PollOnce/Run simply rebuilds the view within one
 // interval, exactly as specified.
 type Registry struct {
@@ -41,7 +41,7 @@ func NewRegistry(peers []string, prober StatusProber, rpcTimeout time.Duration) 
 // is simply left out of this round's view — not marked with a sticky "down"
 // flag — so the very next successful poll re-adds it automatically (§1).
 // Health tracking beyond this is deliberately not Discovery's job; that's
-// the Circuit Breaker's concern (md-week4 §5), kept out of this package.
+// the Circuit Breaker's concern, kept out of this package.
 func (r *Registry) PollOnce(ctx context.Context) {
 	type result struct {
 		addr  string
@@ -114,8 +114,9 @@ func (r *Registry) PollOnce(ctx context.Context) {
 
 // logViewChangeIfAny logs VIEW_UPDATED when the resolved leader or the
 // follower set differs from the previous poll round — must fire even if
-// only the leader changed and the follower set didn't (Week 5's
-// ConfirmCompaction re-verification cares about leader changes above all).
+// only the leader changed and the follower set didn't (the Snapshot &
+// Backup service's ConfirmCompaction re-verification cares about leader
+// changes above all).
 func logViewChangeIfAny(oldView, newView *pb.ClusterView) {
 	oldLeader := oldView.GetLeaderAddress()
 	newLeader := newView.GetLeaderAddress()

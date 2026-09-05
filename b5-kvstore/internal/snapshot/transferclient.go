@@ -31,9 +31,9 @@ type TransferClient interface {
 // GRPCTransferClient is a TransferClient backed by real gRPC, caching one
 // connection per address (mirroring internal/raft/grpctransport's pattern)
 // since the leader/download target changes over the service's lifetime.
-// Dials via grpcutil.DialPassthrough (md-week5.md §0): every reconnection
-// attempt re-resolves fresh against Docker's embedded DNS instead of a
-// cached gRPC resolver, exactly like the consensus-peer transport fix.
+// Dials via grpcutil.DialPassthrough: every reconnection attempt
+// re-resolves fresh against Docker's embedded DNS instead of a cached
+// gRPC resolver, exactly like the consensus-peer transport fix.
 type GRPCTransferClient struct {
 	dialOpts []grpc.DialOption
 

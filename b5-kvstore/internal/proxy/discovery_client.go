@@ -10,9 +10,9 @@ import (
 	"b5-kvstore/pkg/pb"
 )
 
-// DiscoveryClient fetches the current ClusterView from Service Discovery
-// (md-week4 §1/§3). Interfaced for the same reason as KVClientFactory: so
-// tests can substitute a fake, deterministic Discovery view.
+// DiscoveryClient fetches the current ClusterView from Service Discovery.
+// Interfaced for the same reason as KVClientFactory: so tests can
+// substitute a fake, deterministic Discovery view.
 type DiscoveryClient interface {
 	GetClusterView(ctx context.Context) (*pb.ClusterView, error)
 }

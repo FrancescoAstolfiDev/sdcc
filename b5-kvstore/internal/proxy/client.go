@@ -1,6 +1,6 @@
-// Package proxy implements the Client Proxy (md-week4 §2-§4, spec §4):
-// REST<->gRPC translation, leader/follower routing with redirect-following,
-// the Read-Index-aware read path, and Circuit Breaker wiring around every
+// Package proxy implements the Client Proxy (spec §4): REST<->gRPC
+// translation, leader/follower routing with redirect-following, the
+// Read-Index-aware read path, and Circuit Breaker wiring around every
 // outbound call to a consensus node. It is stateless beyond the cached
 // ClusterView (§4.1's "MUST NOT participate in consensus").
 package proxy

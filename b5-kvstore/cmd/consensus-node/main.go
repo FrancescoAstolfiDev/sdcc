@@ -2,10 +2,10 @@
 // All consensus nodes run this same binary; role (Leader/Follower/Candidate)
 // is runtime state, not a build-time distinction.
 //
-// Week 2-3: wires the internal/raft core to the real pkg/pb gRPC bindings
-// (§6 Step C) — RequestVote/AppendEntries/GetStatus/InstallSnapshot are now
-// served for real. KVService is intentionally not registered here: it's
-// the Client Proxy's concern (Week 4), an explicit non-goal of this phase.
+// Wires the internal/raft core to the real pkg/pb gRPC bindings (§6 Step C)
+// — RequestVote/AppendEntries/GetStatus/InstallSnapshot are served for real.
+// KVService is intentionally not registered here: it's the Client Proxy's
+// concern, an explicit non-goal of this binary.
 package main
 
 import (
@@ -58,9 +58,8 @@ func main() {
 	peers := peerAddresses(peersEnv, port)
 
 	// The node's own advertised address, resolved from the same PEERS list
-	// (single source of truth) by matching our own port — needed (unlike
-	// Week 2-3, where it was purely descriptive) now that md-week4's
-	// Read-Index handshake and redirect_leader responses require a
+	// (single source of truth) by matching our own port — needed now that
+	// the Read-Index handshake and redirect_leader responses require a
 	// dialable "host:port", not just ":port".
 	address := ownAddress(peersEnv, port)
 	if address == "" {

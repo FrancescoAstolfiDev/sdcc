@@ -1,7 +1,7 @@
 // Package grpcutil holds the one gRPC dialing helper every internal client
 // that talks to a peer on the Docker bridge network must go through.
 //
-// Week 4's manual fault-injection testing found the consensus transport
+// Manual fault-injection testing found the consensus transport
 // (internal/raft/grpctransport) dialing peers with gRPC-Go's default `dns`
 // resolver scheme, which caches resolution and does not reliably re-resolve
 // a peer's hostname after that peer's container is killed and restarted
@@ -11,11 +11,11 @@
 // retries) re-resolves via a fresh net.Dial against Docker's embedded DNS
 // instead of a cached gRPC resolver.
 //
-// Week 5 reuses this same fix for the two new gRPC directions introduced by
-// the Snapshot & Backup service (internal/snapshot's client toward consensus
-// nodes, and internal/raft's new client toward the Snapshot Catalog API) —
-// see md-week5.md §0. Any new client dialing a peer inside the cluster
-// should call DialPassthrough instead of grpc.NewClient directly.
+// The same fix covers the two other gRPC directions introduced by the
+// Snapshot & Backup service (internal/snapshot's client toward consensus
+// nodes, and internal/raft's client toward the Snapshot Catalog API). Any
+// new client dialing a peer inside the cluster should call DialPassthrough
+// instead of grpc.NewClient directly.
 package grpcutil
 
 import (

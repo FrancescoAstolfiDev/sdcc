@@ -13,11 +13,11 @@ import (
 )
 
 // chunkSize bounds each SnapshotChunk sent by FetchSnapshot. This project's
-// scale doesn't call for streaming straight off disk without buffering
-// (md-week5.md §2: "a simple in-memory read-then-chunk implementation is
-// acceptable — don't over-engineer this") — the whole encoded snapshot is
-// built in memory once, then split into chunkSize pieces just so a single
-// SnapshotChunk message doesn't grow unbounded with the state machine.
+// scale doesn't call for streaming straight off disk without buffering — a
+// simple in-memory read-then-chunk implementation is acceptable here — the
+// whole encoded snapshot is built in memory once, then split into
+// chunkSize pieces just so a single SnapshotChunk message doesn't grow
+// unbounded with the state machine.
 const chunkSize = 64 * 1024
 
 // CatalogServer implements pb.SnapshotCatalogServer (§9.5) over a Store.

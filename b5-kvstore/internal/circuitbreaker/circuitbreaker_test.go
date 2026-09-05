@@ -13,9 +13,8 @@ var errBoom = errors.New("boom")
 func fail() (any, error) { return nil, errBoom }
 func ok() (any, error)   { return "ok", nil }
 
-// TestTripsOnExactlyThreeConsecutiveFailures is the dedicated test required
-// by md-week4 §6: confirm the breaker opens on the 3rd consecutive failure,
-// not the 2nd or the 4th.
+// TestTripsOnExactlyThreeConsecutiveFailures confirms the breaker opens on
+// the 3rd consecutive failure, not the 2nd or the 4th.
 func TestTripsOnExactlyThreeConsecutiveFailures(t *testing.T) {
 	r := newRegistry(nil, 2*time.Second)
 

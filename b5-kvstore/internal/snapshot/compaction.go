@@ -45,7 +45,7 @@ func (c *Compactor) Run(ctx context.Context) {
 // whether to start, skip, or wait on a compaction cycle. Exported (rather
 // than folded into an unexported ticker callback) so unit tests can drive
 // it directly and deterministically against a fake DiscoveryClient/
-// TransferClient — no real gRPC or timers needed (md-week5.md §5).
+// TransferClient — no real gRPC or timers needed.
 func (c *Compactor) Tick(ctx context.Context) {
 	view, err := c.discovery.GetClusterView(ctx)
 	if err != nil || view.GetLeaderAddress() == "" {

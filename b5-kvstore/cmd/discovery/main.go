@@ -1,8 +1,8 @@
-// Command discovery is the Service Discovery node (spec §7, md-week4 §1): a
-// pull-based polling registry over the static peer list, queried by the
-// Client Proxy and, later, by the Snapshot & Backup service (Week 5).
-// Discovery never sits on the KV data path and never registers nodes
-// dynamically — it only polls GetStatus() on a fixed interval.
+// Command discovery is the Service Discovery node (spec §7): a pull-based
+// polling registry over the static peer list, queried by the Client Proxy
+// and by the Snapshot & Backup service. Discovery never sits on the KV
+// data path and never registers nodes dynamically — it only polls
+// GetStatus() on a fixed interval.
 package main
 
 import (

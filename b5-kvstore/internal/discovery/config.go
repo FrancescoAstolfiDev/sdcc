@@ -1,9 +1,9 @@
 // Package discovery implements the pull-based Service Discovery registry
-// (md-week4 §1, spec §7/§9.3): a periodic poller over a static peer list,
-// exposing an in-memory ClusterView via gRPC to the Client Proxy and (Week
-// 5) the Snapshot & Backup service. Nodes never register themselves — this
-// is the permanent design (§10.6: consensus-node peer addressing never
-// depends on any runtime service), not a temporary simplification.
+// (spec §7/§9.3): a periodic poller over a static peer list, exposing an
+// in-memory ClusterView via gRPC to the Client Proxy and the Snapshot &
+// Backup service. Nodes never register themselves — this is the permanent
+// design (§10.6: consensus-node peer addressing never depends on any
+// runtime service), not a temporary simplification.
 package discovery
 
 import (
@@ -14,8 +14,7 @@ import (
 	"time"
 )
 
-// defaultPollInterval matches md-week4 §1's default and the spec's timing
-// table.
+// defaultPollInterval matches the spec's timing table.
 const defaultPollInterval = 2 * time.Second
 
 // defaultRPCTimeout bounds a single GetStatus call so one unresponsive node
@@ -35,7 +34,7 @@ type Config struct {
 }
 
 // LoadConfigFromEnv reads PEERS (comma-separated "host:port" list) and
-// DISCOVERY_POLL_INTERVAL_MS (default 2000, per md-week4 §1).
+// DISCOVERY_POLL_INTERVAL_MS (default 2000).
 func LoadConfigFromEnv() (Config, error) {
 	peersEnv := os.Getenv("PEERS")
 	var peers []string

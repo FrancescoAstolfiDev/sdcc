@@ -1,7 +1,7 @@
 // Package snapshotfile defines the on-disk/wire format for a compaction
 // checkpoint (spec §5.2/§3.6): the state-machine map plus the log position
 // it corresponds to. It is deliberately dependency-free (no b5-kvstore/internal/raft,
-// no b5-kvstore/internal/statemachine) so both sides of the Week 5 snapshot
+// no b5-kvstore/internal/statemachine) so both sides of the snapshot
 // pipeline can share the exact same struct definition instead of each
 // re-declaring their own and risking the two silently drifting apart:
 //   - internal/snapshot (Snapshot & Backup service) is the writer — it

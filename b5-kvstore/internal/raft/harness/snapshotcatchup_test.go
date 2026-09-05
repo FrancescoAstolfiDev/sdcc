@@ -43,8 +43,8 @@ func (b *safeLogBuffer) String() string {
 	return b.buf.String()
 }
 
-// TestSnapshotCatchup_AnchorsAndResumesReplication exercises md-week5.md
-// §3's catch-up state machine end to end at unit-test speed: a node
+// TestSnapshotCatchup_AnchorsAndResumesReplication exercises the §3
+// catch-up state machine end to end at unit-test speed: a node
 // starting with lastApplied=0 against a fake catalog reporting a snapshot
 // at index 50 should anchor correctly (adopt the state, never apply the
 // anchor itself) and resume normal AppendEntries-based replication from

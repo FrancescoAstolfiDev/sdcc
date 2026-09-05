@@ -125,8 +125,8 @@ type GetReply struct {
 	Value          string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 	RedirectLeader string `protobuf:"bytes,3,opt,name=redirect_leader,json=redirectLeader,proto3" json:"redirect_leader,omitempty"`
 	// ok = false means this node could not authoritatively answer the read
-	// (e.g. the Read-Index handshake failed or timed out, md-week4 §4) —
-	// found/value are meaningless in that case, and the caller must retry via
+	// (e.g. the Read-Index handshake failed or timed out) — found/value are
+	// meaningless in that case, and the caller must retry via
 	// redirect_leader if set, or its own cached leader address otherwise.
 	// Always true for a Leader's direct read and for a follower's
 	// Read-Index-confirmed read.

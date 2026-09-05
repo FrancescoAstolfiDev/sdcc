@@ -14,7 +14,7 @@ import (
 type Transport interface {
 	SendRequestVote(ctx context.Context, peerID string, req *pb.RequestVoteRequest) (*pb.RequestVoteReply, error)
 	SendAppendEntries(ctx context.Context, peerID string, req *pb.AppendEntriesRequest) (*pb.AppendEntriesReply, error)
-	// SendReadIndex delivers a follower's RequestReadIndex call to peerID
-	// (md-week4 §0/§4). peerID here is always the currently-known leader.
+	// SendReadIndex delivers a follower's RequestReadIndex call to peerID.
+	// peerID here is always the currently-known leader.
 	SendReadIndex(ctx context.Context, peerID string, req *pb.ReadIndexRequest) (*pb.ReadIndexReply, error)
 }

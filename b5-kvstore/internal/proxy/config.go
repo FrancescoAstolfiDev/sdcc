@@ -16,9 +16,8 @@ const (
 // per-call timeout to a consensus node.
 type Config struct {
 	// RefreshInterval is how often the cached ClusterView is refreshed on
-	// its normal schedule (md-week4 §3) — separate from the early
-	// invalidation triggers (breaker trip, redirect) which refresh
-	// out-of-schedule.
+	// its normal schedule — separate from the early invalidation triggers
+	// (breaker trip, redirect) which refresh out-of-schedule.
 	RefreshInterval time.Duration
 	// RPCTimeout bounds every individual outbound call to a consensus node
 	// (KVService or Discovery).

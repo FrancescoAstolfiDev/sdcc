@@ -40,9 +40,9 @@ type ConsensusClient interface {
 	// point (§3.6). Not part of the authoritative §9.1 listing but required
 	// by §3.6's RPC signature.
 	InstallSnapshot(ctx context.Context, in *InstallSnapshotRequest, opts ...grpc.CallOption) (*InstallSnapshotReply, error)
-	// Read-Index handshake (md-week4 §0/§4): a follower asks the current
-	// leader to confirm a safe read index (after a fresh quorum-acked
-	// heartbeat round) before serving a linearizable follower read.
+	// Read-Index handshake: a follower asks the current leader to confirm a
+	// safe read index (after a fresh quorum-acked heartbeat round) before
+	// serving a linearizable follower read.
 	RequestReadIndex(ctx context.Context, in *ReadIndexRequest, opts ...grpc.CallOption) (*ReadIndexReply, error)
 }
 
@@ -118,9 +118,9 @@ type ConsensusServer interface {
 	// point (§3.6). Not part of the authoritative §9.1 listing but required
 	// by §3.6's RPC signature.
 	InstallSnapshot(context.Context, *InstallSnapshotRequest) (*InstallSnapshotReply, error)
-	// Read-Index handshake (md-week4 §0/§4): a follower asks the current
-	// leader to confirm a safe read index (after a fresh quorum-acked
-	// heartbeat round) before serving a linearizable follower read.
+	// Read-Index handshake: a follower asks the current leader to confirm a
+	// safe read index (after a fresh quorum-acked heartbeat round) before
+	// serving a linearizable follower read.
 	RequestReadIndex(context.Context, *ReadIndexRequest) (*ReadIndexReply, error)
 	mustEmbedUnimplementedConsensusServer()
 }

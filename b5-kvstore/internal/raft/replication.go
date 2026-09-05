@@ -169,8 +169,7 @@ func (n *Node) mergeEntriesLocked(prevLogIndex uint64, newEntries []*pb.LogEntry
 // applyCommittedLocked applies every entry between lastApplied+1 and
 // commitIndex, in order, via the caller-supplied ApplyFn. Entries are only
 // ever applied after commit, never speculatively (§4 point 4). Any progress
-// wakes up goroutines blocked in waitForApplied (md-week4 §4 follower step
-// 3), via applyWake.
+// wakes up goroutines blocked in waitForApplied, via applyWake.
 func (n *Node) applyCommittedLocked() {
 	advanced := false
 	for n.lastApplied < n.commitIndex {
@@ -196,7 +195,7 @@ func (n *Node) applyCommittedLocked() {
 
 // waitForApplied blocks (no busy-wait: it parks on applyWake) until
 // lastApplied reaches at least target, or ctx is done. Used by
-// FollowerLinearizableRead (readindex.go, md-week4 §4 follower step 3).
+// FollowerLinearizableRead (readindex.go).
 func (n *Node) waitForApplied(ctx context.Context, target uint64) error {
 	for {
 		n.mu.Lock()
@@ -231,8 +230,8 @@ func (n *Node) appendLocalLocked(command []byte) (index, term uint64, err error)
 // Propose appends a new command to the leader's log and immediately begins
 // replicating it, returning as soon as the entry is durable on this node's
 // own log — it does not wait for the entry to be committed. This is the
-// client-write entry point used by the in-process test harness in this
-// phase (§4 point 1, §6) — the Client Proxy doesn't exist until Week 4.
+// client-write entry point used by the in-process test harness (§4 point
+// 1, §6), and by the Client Proxy in production.
 func (n *Node) Propose(command []byte) (index uint64, term uint64, isLeader bool) {
 	n.mu.Lock()
 	if n.role != Leader {
@@ -287,10 +286,9 @@ func (n *Node) ProposeSync(ctx context.Context, command []byte) (index uint64, t
 
 // outgoingAppendEntries is one leader->follower AppendEntries call, built by
 // buildAppendEntriesRequestsLocked and shared between the periodic heartbeat
-// broadcast and the Read-Index quorum confirmation (readindex.go, md-week4
-// §4 leader step 2) — both reuse the exact same request-construction and
-// reply-handling path, per that section's "do not build a second heartbeat
-// mechanism just for this."
+// broadcast and the Read-Index quorum confirmation (readindex.go) — both
+// reuse the exact same request-construction and reply-handling path
+// instead of building a second heartbeat mechanism just for this.
 type outgoingAppendEntries struct {
 	peer       string
 	req        *pb.AppendEntriesRequest
@@ -475,9 +473,8 @@ func (n *Node) InstallSnapshot(_ context.Context, req *pb.InstallSnapshotRequest
 	return &pb.InstallSnapshotReply{Term: n.currentTerm}, nil
 }
 
-// GetStatus is a cheap, non-blocking status read (§0). Not consumed by
-// anything until Week 4's Service Discovery, but the wire representation
-// exists from the start.
+// GetStatus is a cheap, non-blocking status read (§0), polled by Service
+// Discovery.
 func (n *Node) GetStatus(_ context.Context, _ *pb.GetStatusRequest) (*pb.GetStatusReply, error) {
 	n.mu.Lock()
 	defer n.mu.Unlock()

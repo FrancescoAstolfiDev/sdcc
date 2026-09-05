@@ -10,17 +10,17 @@ import (
 )
 
 // ErrReadIndexUnavailable is returned by FollowerLinearizableRead whenever
-// the follower-side Read-Index handshake (md-week4 §4) cannot be completed
-// right now — either because the leader couldn't confirm its own
-// leadership (ReadIndexReply.ok == false), the RequestReadIndex RPC itself
+// the follower-side Read-Index handshake cannot be completed right now —
+// either because the leader couldn't confirm its own leadership
+// (ReadIndexReply.ok == false), the RequestReadIndex RPC itself
 // failed/timed out, or the wait for lastApplied to catch up ran out of
 // time. In every case the caller's documented recovery is the same: fall
 // back to a single, direct read against the cached Leader — never bounce to
-// a second follower (md-week4 §4's "runtime fallback rule").
+// a second follower (the handshake's "runtime fallback rule").
 var ErrReadIndexUnavailable = errors.New("raft: read-index unavailable; caller must fall back to the leader")
 
-// RequestReadIndex is the leader-side Read-Index handler (md-week4 §4,
-// "Leader side"). If this node isn't currently leader it replies ok=false
+// RequestReadIndex is the leader-side Read-Index handler ("Leader side").
+// If this node isn't currently leader it replies ok=false
 // with the best-known leader address, if any. Otherwise it captures the
 // current commitIndex, confirms leadership is still valid via a fresh round
 // of heartbeats acknowledged by a quorum (reusing the same AppendEntries
@@ -73,9 +73,9 @@ func (n *Node) RequestReadIndex(ctx context.Context, req *pb.ReadIndexRequest) (
 
 // confirmLeadershipQuorum sends one fresh round of AppendEntries to every
 // peer (via the same request-building/reply-handling path as the periodic
-// heartbeat broadcast, per md-week4 §4's "reuse the existing
-// heartbeat/AppendEntries machinery... do not build a second heartbeat
-// mechanism just for this") and blocks until a quorum has acknowledged it
+// heartbeat broadcast — reusing the existing heartbeat/AppendEntries
+// machinery instead of building a second one just for this) and blocks
+// until a quorum has acknowledged it
 // for term, ctx is done, or every peer has replied without reaching quorum.
 func (n *Node) confirmLeadershipQuorum(ctx context.Context, term uint64) error {
 	n.mu.Lock()
@@ -116,9 +116,9 @@ func (n *Node) confirmLeadershipQuorum(ctx context.Context, term uint64) error {
 }
 
 // FollowerLinearizableRead performs the follower side of the Read-Index
-// handshake (md-week4 §4, "Follower side", steps 1-4): if this node is
-// currently Leader it returns immediately (nothing to confirm — the caller
-// reads the local state machine directly, per §3's leader-default path).
+// handshake ("Follower side", steps 1-4): if this node is currently Leader
+// it returns immediately (nothing to confirm — the caller reads the local
+// state machine directly, per §3's leader-default path).
 // Otherwise it asks the currently-known leader to confirm a read index and
 // blocks until this node's own lastApplied has caught up, at which point
 // it's safe for the caller to read the local state machine. Any failure
@@ -143,7 +143,7 @@ func (n *Node) FollowerLinearizableRead(ctx context.Context) error {
 
 	reply, err := n.transport.SendReadIndex(ctx, leaderAddr, &pb.ReadIndexRequest{FollowerId: selfID})
 	if err != nil || reply == nil {
-		// Transport failure/timeout: md-week4 §4's dedicated runtime
+		// Transport failure/timeout: the handshake's dedicated runtime
 		// fallback rule (distinct from ok == false, but same outcome for
 		// the caller).
 		return ErrReadIndexUnavailable
@@ -162,11 +162,9 @@ func (n *Node) FollowerLinearizableRead(ctx context.Context) error {
 
 	waitStart := time.Now()
 	if err := n.waitForApplied(ctx, reply.GetReadIndex()); err != nil {
-		// Bounded by ctx: this phase has no snapshot/compaction (§7
-		// non-goal), so the only way this can time out is a follower that
-		// is lagging further behind than the caller's deadline allows —
-		// documented known limitation for the "entries already compacted"
-		// case in md-week4 §4 follower step 5, once Week 5 exists.
+		// Bounded by ctx: this can time out if a follower is lagging
+		// further behind than the caller's deadline allows, or if the
+		// target index has already been compacted away.
 		return ErrReadIndexUnavailable
 	}
 	// waitedMs is ~0 when this node's lastApplied already met readIndex

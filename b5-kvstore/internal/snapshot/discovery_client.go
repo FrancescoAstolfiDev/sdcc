@@ -22,8 +22,8 @@ type DiscoveryClient interface {
 // address (not a peer that gets killed/restarted as part of any tested
 // scenario), so — matching internal/proxy's own discovery client — this
 // dials plainly rather than through grpcutil.DialPassthrough; that fix is
-// for the two new Week 5 directions specifically (md-week5.md §0), not this
-// pre-existing one.
+// for the Snapshot & Backup service's other gRPC directions specifically,
+// not this pre-existing one.
 type GRPCDiscoveryClient struct {
 	client pb.DiscoveryClient
 	conn   *grpc.ClientConn

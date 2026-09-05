@@ -12,7 +12,7 @@ import (
 // FakeSnapshotCatalog is an in-process, controllable stand-in for
 // raft.SnapshotCatalogClient (§5.3), letting catch-up tests exercise a
 // Node's periodic poll loop without the real Snapshot & Backup service or
-// any gRPC (md-week5.md §5).
+// any gRPC.
 type FakeSnapshotCatalog struct {
 	mu        sync.Mutex
 	available bool

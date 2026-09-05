@@ -14,9 +14,9 @@ import (
 	"b5-kvstore/pkg/pb"
 )
 
-// maxHops caps internal redirect-following (md-week4 §3): at most this many
-// attempts (the first hit plus retries against redirected leaders) before
-// giving up with 503 unavailable.
+// maxHops caps internal redirect-following: at most this many attempts (the
+// first hit plus retries against redirected leaders) before giving up with
+// 503 unavailable.
 const maxHops = 3
 
 // WriteOp identifies which KVService write RPC a write request maps to.
@@ -201,8 +201,8 @@ func (p *Proxy) callGet(ctx context.Context, addr, key string) (*pb.GetReply, er
 }
 
 // Write executes a Put/Update/Delete: always routed to the cached Leader,
-// following redirects internally up to maxHops (md-week4 §2/§3). Never
-// surfaced to the external client as an HTTP redirect.
+// following redirects internally up to maxHops. Never surfaced to the
+// external client as an HTTP redirect.
 func (p *Proxy) Write(ctx context.Context, op WriteOp, key, value string) (*pb.WriteReply, *apiError) {
 	view := p.currentView()
 	if p.allNodesOpen(view) {
@@ -251,8 +251,8 @@ func redirectDetail(redirect string) string {
 	return "redirect_leader=" + redirect
 }
 
-// Get executes a read (md-week4 §3/§4): by default round-robins across
-// cached followers via the Read-Index protocol; if a follower can't answer
+// Get executes a read: by default round-robins across cached followers
+// via the Read-Index protocol; if a follower can't answer
 // authoritatively (or can't be reached at all) it falls back once, directly
 // to the cached Leader (§4's single-hop fallback — distinct from the
 // generic redirect-following used when routing to the Leader by default).
@@ -329,9 +329,9 @@ func (p *Proxy) leaderPathGet(ctx context.Context, addr, key string) (*pb.GetRep
 	return nil, errUnavailable("redirect-hop budget exhausted", defaultRefreshInterval)
 }
 
-// singleHopLeaderGet is md-week4 §4's Read-Index-specific fallback: exactly
-// one direct attempt against the cached Leader, no further redirect
-// chasing and no second follower.
+// singleHopLeaderGet is the Read-Index-specific fallback (§4): exactly one
+// direct attempt against the cached Leader, no further redirect chasing
+// and no second follower.
 func (p *Proxy) singleHopLeaderGet(ctx context.Context, key string) (*pb.GetReply, *apiError) {
 	addr := p.currentView().GetLeaderAddress()
 	if addr == "" {

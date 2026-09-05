@@ -40,10 +40,10 @@ type ClusterOption func(*Cluster)
 // WithApplyHook registers a callback invoked, in addition to the internal
 // Applied() bookkeeping, every time any node applies a committed entry.
 // This is what lets a package outside internal/raft — e.g. internal/proxy's
-// integration tests (md-week4 §6: "extend [the harness]... so the proxy's
-// routing code can run against the in-process Node instances instead of
-// real gRPC") — feed committed entries into its own state machine, wired to
-// the same in-process cluster the proxy under test talks to.
+// integration tests, so the proxy's routing code can run against the
+// in-process Node instances instead of real gRPC — feed committed entries
+// into its own state machine, wired to the same in-process cluster the
+// proxy under test talks to.
 func WithApplyHook(fn func(id string, msg raft.ApplyMsg)) ClusterOption {
 	return func(c *Cluster) { c.applyHook = fn }
 }

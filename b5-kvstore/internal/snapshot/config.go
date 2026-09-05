@@ -18,9 +18,9 @@ const (
 // cycle (§5.1).
 type Config struct {
 	// PollInterval is how often the leader's log occupancy is checked
-	// (SNAPSHOT_BACKUP_POLL_INTERVAL_MS, default 5000ms — md-week5.md §1
-	// point 2; distinct from raft.SnapshotConfig.PollInterval, which is the
-	// consensus nodes' own poll of this service, §5.3).
+	// (SNAPSHOT_BACKUP_POLL_INTERVAL_MS, default 5000ms; distinct from
+	// raft.SnapshotConfig.PollInterval, which is the consensus nodes' own
+	// poll of this service, §5.3).
 	PollInterval time.Duration
 	// CompactionThresholdPercent is the occupancy percentage that starts a
 	// compaction cycle (COMPACTION_THRESHOLD_PERCENT, default 30).

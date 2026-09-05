@@ -2,7 +2,7 @@ package proxy
 
 import "time"
 
-// apiError is the internal representation of md-week4 §2's uniform error
+// apiError is the internal representation of the proxy's uniform error
 // envelope ({"error": {"code": "...", "message": "..."}}), carrying enough
 // information (status, retryAfter) for the HTTP layer to render it.
 type apiError struct {

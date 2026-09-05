@@ -18,8 +18,8 @@ import (
 // ConfirmCompaction are only meaningful when this node is the leader (only
 // the leader can authoritatively decide what's safe to truncate) — the
 // backup service is responsible for targeting the leader and re-verifying
-// before ConfirmCompaction (md-week5.md §1 points 1/5); these handlers
-// don't themselves reject a non-leader caller, since doing the (harmless,
+// before ConfirmCompaction (§1 points 1/5); these handlers don't
+// themselves reject a non-leader caller, since doing the (harmless,
 // idempotent) work anyway is simpler than adding a role gate no correct
 // caller should ever need.
 

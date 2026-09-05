@@ -1,7 +1,7 @@
 // Package circuitbreaker wraps every outbound Client Proxy -> consensus-node
-// gRPC call in a sony/gobreaker instance, one breaker per node address
-// (md-week4 §5). Breakers are purely a proxy-side concern: no consensus
-// node or Service Discovery instance needs to know breaker state.
+// gRPC call in a sony/gobreaker instance, one breaker per node address.
+// Breakers are purely a proxy-side concern: no consensus node or Service
+// Discovery instance needs to know breaker state.
 package circuitbreaker
 
 import (
@@ -12,7 +12,8 @@ import (
 )
 
 // consecutiveFailuresToTrip, openTimeout, halfOpenMaxRequests and
-// closedInterval are exactly the values from md-week4 §5's table.
+// closedInterval are the spec's chosen thresholds for tripping and
+// probing the breaker.
 const (
 	consecutiveFailuresToTrip = 3
 	openTimeout               = 2 * time.Second
@@ -46,7 +47,7 @@ type Registry struct {
 // NewRegistry builds a Registry. onTrip, if non-nil, is invoked exactly
 // once per breaker trip (transition into the open state) — the proxy wires
 // this to trigger an out-of-schedule ClusterView refresh from Service
-// Discovery (md-week4 §5), rather than waiting for the next periodic one.
+// Discovery, rather than waiting for the next periodic one.
 func NewRegistry(onTrip func(addr string)) *Registry {
 	return newRegistry(onTrip, openTimeout)
 }
@@ -106,7 +107,7 @@ func (r *Registry) State(addr string) State {
 }
 
 // AllOpen reports whether every address in addrs currently has an open
-// breaker — the condition md-week4 §5 maps to a 503 unavailable response.
+// breaker — the condition the proxy maps to a 503 unavailable response.
 // An empty addrs is never "all open" (there's nothing to be circuit-broken
 // from); the proxy handles an empty known-node set as its own case.
 func (r *Registry) AllOpen(addrs []string) bool {

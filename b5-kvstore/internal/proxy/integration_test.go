@@ -14,10 +14,10 @@ import (
 	"b5-kvstore/pkg/pb"
 )
 
-// This file is the "thin adapter" md-week4 §6 asks for: it lets Proxy's
-// routing/redirect/Read-Index logic run against real in-process raft.Node
-// instances (via internal/raft/harness) instead of real gRPC, at
-// unit-test speed. Every node in the cluster gets its own
+// This file is a thin adapter: it lets Proxy's routing/redirect/Read-Index
+// logic run against real in-process raft.Node instances (via
+// internal/raft/harness) instead of real gRPC, at unit-test speed. Every
+// node in the cluster gets its own
 // statemachine.Server (wired to the harness's ApplyHook), and
 // inprocessFactory/harnessDiscovery adapt those servers to the same
 // KVClientFactory/DiscoveryClient interfaces the production gRPC-backed

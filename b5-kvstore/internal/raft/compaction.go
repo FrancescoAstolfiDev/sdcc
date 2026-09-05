@@ -13,8 +13,7 @@ import (
 // file.LastIncludedIndex is replaced by a single anchor placeholder entry
 // (Term == file.LastIncludedTerm), keeping only entries after it, and
 // persists file as the new local snapshot backing that anchor (§3.6). This
-// is the shared primitive behind both compaction paths introduced in
-// Week 5:
+// is the shared primitive behind both compaction paths:
 //   - the leader's immediate truncation on ConfirmCompaction (§5.1,
 //     snapshottransfer.go), where file is decoded from the Snapshot &
 //     Backup service's own request;
