@@ -3,9 +3,9 @@
 // is runtime state, not a build-time distinction.
 //
 // Wires the internal/raft core to the real pkg/pb gRPC bindings (§6 Step C)
-// — RequestVote/AppendEntries/GetStatus/InstallSnapshot are served for real.
-// KVService is intentionally not registered here: it's the Client Proxy's
-// concern, an explicit non-goal of this binary.
+// — RequestVote/AppendEntries/GetStatus/RequestReadIndex are served for
+// real. KVService is intentionally not registered here: it's the Client
+// Proxy's concern, an explicit non-goal of this binary.
 package main
 
 import (

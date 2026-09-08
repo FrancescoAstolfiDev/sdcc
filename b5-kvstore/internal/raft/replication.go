@@ -458,22 +458,7 @@ func (n *Node) maybeAdvanceCommitIndexLocked() {
 	}
 }
 
-// InstallSnapshot satisfies pb.ConsensusServer so the node can be
-// registered as a real gRPC server (§6 Step C), but snapshotting itself is
-// an explicit non-goal of this phase (§7) — no log compaction and no
-// Snapshot & Backup integration happen yet.
-func (n *Node) InstallSnapshot(_ context.Context, req *pb.InstallSnapshotRequest) (*pb.InstallSnapshotReply, error) {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-	if req.GetTerm() > n.currentTerm {
-		if _, err := n.observeTermLocked(req.GetTerm(), "InstallSnapshot"); err != nil {
-			return nil, err
-		}
-	}
-	return &pb.InstallSnapshotReply{Term: n.currentTerm}, nil
-}
-
-// GetStatus is a cheap, non-blocking status read (§0), polled by Service
+// GetStatus is a c heap, non-blocking status read (§0), polled by Service
 // Discovery.
 func (n *Node) GetStatus(_ context.Context, _ *pb.GetStatusRequest) (*pb.GetStatusReply, error) {
 	n.mu.Lock()

@@ -22,7 +22,6 @@ const (
 	Consensus_RequestVote_FullMethodName      = "/consensus.Consensus/RequestVote"
 	Consensus_AppendEntries_FullMethodName    = "/consensus.Consensus/AppendEntries"
 	Consensus_GetStatus_FullMethodName        = "/consensus.Consensus/GetStatus"
-	Consensus_InstallSnapshot_FullMethodName  = "/consensus.Consensus/InstallSnapshot"
 	Consensus_RequestReadIndex_FullMethodName = "/consensus.Consensus/RequestReadIndex"
 )
 
@@ -36,10 +35,6 @@ type ConsensusClient interface {
 	RequestVote(ctx context.Context, in *RequestVoteRequest, opts ...grpc.CallOption) (*RequestVoteReply, error)
 	AppendEntries(ctx context.Context, in *AppendEntriesRequest, opts ...grpc.CallOption) (*AppendEntriesReply, error)
 	GetStatus(ctx context.Context, in *GetStatusRequest, opts ...grpc.CallOption) (*GetStatusReply, error)
-	// Sent by the Leader to a follower that has fallen behind a compaction
-	// point (§3.6). Not part of the authoritative §9.1 listing but required
-	// by §3.6's RPC signature.
-	InstallSnapshot(ctx context.Context, in *InstallSnapshotRequest, opts ...grpc.CallOption) (*InstallSnapshotReply, error)
 	// Read-Index handshake: a follower asks the current leader to confirm a
 	// safe read index (after a fresh quorum-acked heartbeat round) before
 	// serving a linearizable follower read.
@@ -84,16 +79,6 @@ func (c *consensusClient) GetStatus(ctx context.Context, in *GetStatusRequest, o
 	return out, nil
 }
 
-func (c *consensusClient) InstallSnapshot(ctx context.Context, in *InstallSnapshotRequest, opts ...grpc.CallOption) (*InstallSnapshotReply, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(InstallSnapshotReply)
-	err := c.cc.Invoke(ctx, Consensus_InstallSnapshot_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *consensusClient) RequestReadIndex(ctx context.Context, in *ReadIndexRequest, opts ...grpc.CallOption) (*ReadIndexReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ReadIndexReply)
@@ -114,10 +99,6 @@ type ConsensusServer interface {
 	RequestVote(context.Context, *RequestVoteRequest) (*RequestVoteReply, error)
 	AppendEntries(context.Context, *AppendEntriesRequest) (*AppendEntriesReply, error)
 	GetStatus(context.Context, *GetStatusRequest) (*GetStatusReply, error)
-	// Sent by the Leader to a follower that has fallen behind a compaction
-	// point (§3.6). Not part of the authoritative §9.1 listing but required
-	// by §3.6's RPC signature.
-	InstallSnapshot(context.Context, *InstallSnapshotRequest) (*InstallSnapshotReply, error)
 	// Read-Index handshake: a follower asks the current leader to confirm a
 	// safe read index (after a fresh quorum-acked heartbeat round) before
 	// serving a linearizable follower read.
@@ -140,9 +121,6 @@ func (UnimplementedConsensusServer) AppendEntries(context.Context, *AppendEntrie
 }
 func (UnimplementedConsensusServer) GetStatus(context.Context, *GetStatusRequest) (*GetStatusReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetStatus not implemented")
-}
-func (UnimplementedConsensusServer) InstallSnapshot(context.Context, *InstallSnapshotRequest) (*InstallSnapshotReply, error) {
-	return nil, status.Error(codes.Unimplemented, "method InstallSnapshot not implemented")
 }
 func (UnimplementedConsensusServer) RequestReadIndex(context.Context, *ReadIndexRequest) (*ReadIndexReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method RequestReadIndex not implemented")
@@ -222,24 +200,6 @@ func _Consensus_GetStatus_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Consensus_InstallSnapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InstallSnapshotRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ConsensusServer).InstallSnapshot(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Consensus_InstallSnapshot_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ConsensusServer).InstallSnapshot(ctx, req.(*InstallSnapshotRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Consensus_RequestReadIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ReadIndexRequest)
 	if err := dec(in); err != nil {
@@ -276,10 +236,6 @@ var Consensus_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStatus",
 			Handler:    _Consensus_GetStatus_Handler,
-		},
-		{
-			MethodName: "InstallSnapshot",
-			Handler:    _Consensus_InstallSnapshot_Handler,
 		},
 		{
 			MethodName: "RequestReadIndex",

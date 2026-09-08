@@ -163,8 +163,8 @@ type Config struct {
 }
 
 // Node is a single Raft-lite cluster member. All exported RPC-handler
-// methods (RequestVote, AppendEntries, GetStatus, InstallSnapshot) satisfy
-// pb.ConsensusServer.
+// methods (RequestVote, AppendEntries, GetStatus, RequestReadIndex)
+// satisfy pb.ConsensusServer.
 type Node struct {
 	// Embedding satisfies protoc-gen-go-grpc's forced forward-compatibility
 	// requirement (mustEmbedUnimplementedConsensusServer). Node implements
